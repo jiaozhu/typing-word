@@ -18,7 +18,6 @@ import DeleteIcon from "@/components/icon/DeleteIcon.vue";
 import PracticeSettingDialog from "@/pages/word/components/PracticeSettingDialog.vue";
 import ChangeLastPracticeIndexDialog from "@/pages/word/components/ChangeLastPracticeIndexDialog.vue";
 import {useSettingStore} from "@/stores/setting.ts";
-import CollectNotice from "@/components/CollectNotice.vue";
 import {useFetch} from "@vueuse/core";
 import {CAN_REQUEST, DICT_LIST, PracticeSaveWordKey} from "@/config/env.ts";
 import {myDictList} from "@/apis";
@@ -173,7 +172,7 @@ async function onShufflePracticeSettingOk(total) {
   localStorage.removeItem(PracticeSaveWordKey.key)
 
   let ignoreList = [store.allIgnoreWords, store.knownWords][settingStore.ignoreSimpleWord ? 0 : 1]
-  currentStudy.shuffle = shuffle(store.sdict.words.filter(v => !ignoreList.includes(v.word))).slice(0, total)
+  currentStudy.shuffle = shuffle(store.sdict.words.slice(0, store.sdict.lastLearnIndex).filter(v => !ignoreList.includes(v.word))).slice(0, total)
   nav('practice-words/' + store.sdict.id, {}, {
     taskWords: currentStudy,
     total //用于再来一组时，随机出正确的长度，因为练习中可能会点击已掌握，导致重学一遍之后长度变少，如果再来一组，此时长度就不正确
@@ -379,7 +378,6 @@ const {
     v-model="showShufflePracticeSettingDialog"
     @ok="onShufflePracticeSettingOk"/>
 
-  <CollectNotice/>
 </template>
 
 <style scoped lang="scss">

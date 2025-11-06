@@ -40,7 +40,8 @@
     </script>
     <script>
       function nav(url) {
-        history.pushState(null, "", url);
+        window.location.href = url;
+        // history.pushState(null, "", url);
       }
 
       function toggleEl(val, close = false) {

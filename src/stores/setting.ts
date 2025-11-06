@@ -69,7 +69,7 @@ export const getDefaultSettingState = (): SettingState => ({
 
   keyboardSound: true,
   keyboardSoundVolume: 100,
-  keyboardSoundFile: '机械键盘2',
+  keyboardSoundFile: '笔记本键盘',
 
   effectSound: true,
   effectSoundVolume: 100,

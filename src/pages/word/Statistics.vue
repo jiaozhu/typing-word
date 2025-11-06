@@ -9,6 +9,7 @@ import dayjs from "dayjs";
 import isBetween from "dayjs/plugin/isBetween";
 import {defineAsyncComponent, inject, watch} from "vue";
 import isoWeek from 'dayjs/plugin/isoWeek'
+import {msToHourMinute, msToMinute} from "@/utils";
 
 dayjs.extend(isoWeek)
 dayjs.extend(isBetween);
@@ -135,8 +136,7 @@ function options(emitType: string) {
       </div>
 
       <div class="text-xl text-center flex flex-col justify-around">
-        <div>非常棒! 坚持了 <span class="color-emerald-500 font-bold text-2xl">
-          {{ dayjs().diff(statStore.startDate, 'm') }}</span>分钟
+        <div>非常棒! 坚持了 <span class="color-emerald-500 font-bold text-2xl">{{msToHourMinute(statStore.spend) }}</span>
         </div>
       </div>
       <div class="flex justify-center gap-10">

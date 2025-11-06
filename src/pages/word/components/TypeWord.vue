@@ -141,6 +141,7 @@ function unknown(e) {
     if (!showWordResult) {
       showWordResult = true
       emit('wrong')
+      if (settingStore.wordSound) volumeIconRef?.play()
       return
     }
   }

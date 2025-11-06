@@ -237,7 +237,7 @@ async function startPractice() {
     wordPracticeMode: settingStore.wordPracticeMode
   })
   let currentStudy = getCurrentStudyWord()
-  nav('practice-words/' + store.sdict.id, {}, currentStudy)
+  nav('practice-words/' + store.sdict.id, {}, {taskWords:currentStudy})
 }
 
 async function addMyStudyList() {
