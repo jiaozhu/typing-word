@@ -60,7 +60,6 @@ export function uploadImportData(data, onUploadProgress) {
   })
 }
 
-// 查询导入进度，status: 0=导入中, 1=完成, 2=失败
-export function getProgress(params?) {
-  return http<{ status: number; reason: string }>('dict/getProgress', null, params, 'get')
+export function getProgress() {
+  return http<{ status: number; reason: string }>('dict/getProgress', null, null, 'get')
 }

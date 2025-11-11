@@ -87,12 +87,7 @@ export function registerApi(params: RegisterParams) {
 }
 
 export function sendCode(params: SendCodeParams) {
-  return Promise.resolve({
-    success: true,
-    code: 200,
-    msg: '登录成功',
-  })
-  return http<boolean>('user/sendCode', params, null, 'post')
+  return http<boolean>('user/sendCode', null, params, 'get')
 }
 
 export function resetPasswordApi(params: ResetPasswordParams) {

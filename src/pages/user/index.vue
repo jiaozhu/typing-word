@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { onMounted, onUnmounted, ref } from "vue";
 import { useAuthStore } from "@/stores/auth.ts";
 import { useRouter } from "vue-router";
 import BaseButton from "@/components/BaseButton.vue";
@@ -12,12 +12,15 @@ const router = useRouter();
 // 页面状态
 const isLoading = ref(false);
 
-// 同步数据状态
-const isSyncing = ref(false);
+// 上传与后台处理状态
+const isUploading = ref(false);
+const isProcessing = ref(false);
 const uploadPercent = ref(0);
-const progressText = ref("等待上传...");
-const syncStatus = ref<number | null>(null); // 0=导入中,1=完成,2=失败
-const syncReason = ref("");
+const processStatus = ref<number | null>(null); // 0=导入中,1=完成,2=失败
+const processReason = ref("");
+const processElapsedSec = ref(0);
+const hasPendingProcessing = ref(false); // 进入页面首次检查，是否存在后台处理中任务
+const pollingAbort = ref(false); // 页面退出时标记，用于结束轮询
 const fileInputRef = ref<HTMLInputElement | null>(null);
 
 // 退出登录
@@ -35,23 +38,65 @@ const goToSettings = () => {
   router.push("/setting");
 };
 
-onMounted(() => {
+onMounted(async () => {
   if (!authStore.isLoggedIn) {
-    return;
+    // return;
   }
   if (!authStore.user) {
     authStore.fetchUserInfo();
   }
+  // 进入页面先查一次进度
+  try {
+    const res = await getProgress();
+    // 如果 success 为 true，说明有任务在处理，显示“查看同步进度”按钮
+    hasPendingProcessing.value = res.success;
+  } catch (e) {
+    hasPendingProcessing.value = false;
+  }
+});
+
+onUnmounted(() => {
+  // 退出页面，轮询应该结束
+  pollingAbort.value = true;
 });
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+const startPolling = async () => {
+  isProcessing.value = true;
+  pollingAbort.value = false;
+  processElapsedSec.value = 0;
+  try {
+    while (true) {
+      const res = await getProgress();
+      const {status, reason} = (res as any).data || {};
+      processStatus.value = status;
+      processReason.value = reason || "";
+
+      if (pollingAbort.value) break;
+      if (status !== 0) break;
+      processElapsedSec.value += 1;
+      await sleep(1000);
+    }
+  } finally {
+    isProcessing.value = false;
+    hasPendingProcessing.value = false;
+  }
+  if (processStatus.value === 1) {
+    Toast.success("数据同步成功");
+  } else if (processStatus.value === 2) {
+    Toast.error(processReason.value || "导入失败");
+  }
+};
+
 const resetSync = () => {
-  isSyncing.value = false;
+  isUploading.value = false;
+  isProcessing.value = false;
   uploadPercent.value = 0;
-  progressText.value = "等待上传...";
-  syncStatus.value = null;
-  syncReason.value = "";
+  processStatus.value = null;
+  processReason.value = "";
+  processElapsedSec.value = 0;
+  hasPendingProcessing.value = false;
 };
 
 const handleSyncClick = () => {
@@ -71,9 +116,8 @@ const onFileSelected = async (e: Event) => {
   }
 
   try {
-    isSyncing.value = true;
-    progressText.value = "上传中...";
-
+    // 1) 上传阶段：显示上传进度条
+    isUploading.value = true;
     const formData = new FormData();
     formData.append("file", file);
 
@@ -83,33 +127,16 @@ const onFileSelected = async (e: Event) => {
       }
     });
 
-    progressText.value = "导入中...";
+    // 上传完成后，隐藏进度条
+    isUploading.value = false;
 
-    // 轮询导入进度，直到 status != 0
-    while (true) {
-      const res = await getProgress();
-      const { status, reason } = res as any; // http 封装返回结构按实际为准
-      syncStatus.value = status;
-      syncReason.value = reason || "";
-
-      if (status !== 0) break;
-      await sleep(1000);
-    }
-
-    if (syncStatus.value === 1) {
-      uploadPercent.value = 100;
-      progressText.value = "导入完成";
-      Toast.success("数据同步成功");
-    } else if (syncStatus.value === 2) {
-      progressText.value = "导入失败";
-      Toast.error(syncReason.value || "导入失败");
-    }
+    // 2) 后台处理阶段：提示可查看，并由用户点击后开始轮询
+    hasPendingProcessing.value = true;
+    await startPolling();
   } catch (err: any) {
-    progressText.value = "上传或导入失败";
-    Toast.error(err?.message || "上传失败");
-  } finally {
-    // 保留结果展示片刻，再复位
-    setTimeout(() => resetSync(), 1500);
+    isUploading.value = false;
+    isProcessing.value = false;
+    Toast.error(err?.message || "上传或导入失败");
   }
 };
 </script>
@@ -120,7 +147,7 @@ const onFileSelected = async (e: Event) => {
       <div class="profile-header">
         <div class="avatar-wrap">
           <div class="avatar ring">
-            <img v-if="authStore.user?.avatar" :src="authStore.user.avatar" alt="头像" />
+            <img v-if="authStore.user?.avatar" :src="authStore.user.avatar" alt="头像"/>
             <div v-else class="avatar-placeholder">
               {{ authStore.user?.nickname?.charAt(0) || "U" }}
             </div>
@@ -135,13 +162,23 @@ const onFileSelected = async (e: Event) => {
 
       <div class="actions">
         <BaseButton
-          class="w-full"
-          size="large"
-          type="primary"
-          :disabled="isSyncing"
-          @click="handleSyncClick"
+            class="w-full"
+            size="large"
+            type="primary"
+            :disabled="isUploading || isProcessing"
+            @click="handleSyncClick"
         >
           同步数据
+        </BaseButton>
+
+        <!-- 如果进入页面检测到有后台任务，则显示查看按钮，点击后开始轮询 -->
+        <BaseButton
+            v-if="hasPendingProcessing && !isProcessing && !isUploading"
+            class="w-full"
+            size="large"
+            @click="startPolling"
+        >
+          查看同步进度
         </BaseButton>
 
         <BaseButton class="w-full" size="large" @click="goToSettings">
@@ -149,38 +186,52 @@ const onFileSelected = async (e: Event) => {
         </BaseButton>
 
         <BaseButton
-          class="w-full"
-          size="large"
-          type="info"
-          :loading="isLoading"
-          @click="handleLogout"
+            class="w-full"
+            size="large"
+            type="info"
+            :loading="isLoading"
+            @click="handleLogout"
         >
           退出登录
         </BaseButton>
       </div>
 
       <input
-        ref="fileInputRef"
-        type="file"
-        accept=".zip,.json"
-        class="hidden"
-        @change="onFileSelected"
+          ref="fileInputRef"
+          type="file"
+          accept=".zip,.json"
+          class="hidden"
+          @change="onFileSelected"
       />
 
-      <div v-if="isSyncing" class="sync-progress">
+      <!-- 上传进度：仅在上传阶段显示 -->
+      <div v-if="isUploading" class="sync-progress">
         <div class="progress-bar">
           <div class="progress-fill" :style="{ width: uploadPercent + '%' }"></div>
         </div>
         <div class="progress-text">
-          <span>{{ progressText }}</span>
-          <span v-if="syncStatus === 2 && syncReason" class="reason">{{ syncReason }}</span>
+          <span>上传中（{{ uploadPercent }}%）</span>
         </div>
       </div>
+
+      <!-- 后台处理提示与轮询状态展示 -->
+      <div v-if="isProcessing" class="processing">
+        <div class="spinner"></div>
+        <div class="processing-text">
+          <span>后台正在处理...</span>
+          <span class="elapsed">已用时：{{ Math.floor(processElapsedSec / 60) }}分{{ processElapsedSec % 60 }}秒</span>
+          <span v-if="processReason" class="hint">{{ processReason }}</span>
+        </div>
+      </div>
+
+      <!-- 完成/失败提示 -->
+      <div v-if="processStatus === 1" class="result success">导入完成</div>
+      <div v-if="processStatus === 2" class="result fail">导入失败：{{ processReason }}</div>
     </div>
   </div>
 </template>
 
-<style scoped lang="scss">
+<style scoped>
 .user-page {
   max-width: 760px;
   margin: 0 auto;
@@ -227,6 +278,7 @@ const onFileSelected = async (e: Event) => {
 .ring {
   position: relative;
 }
+
 .ring::before {
   content: "";
   position: absolute;
@@ -253,6 +305,7 @@ const onFileSelected = async (e: Event) => {
   font-size: 1.6rem;
   font-weight: 700;
 }
+
 .headline p {
   margin: 0.1rem 0;
   opacity: 0.9;
@@ -268,6 +321,7 @@ const onFileSelected = async (e: Event) => {
 .sync-progress {
   padding: 0 1.25rem 1.25rem;
 }
+
 .progress-bar {
   width: 100%;
   height: 10px;
@@ -275,11 +329,13 @@ const onFileSelected = async (e: Event) => {
   background: #f1f2f6;
   overflow: hidden;
 }
+
 .progress-fill {
   height: 100%;
   background: linear-gradient(90deg, #6b73ff 0%, #00d4ff 100%);
   transition: width 0.3s ease;
 }
+
 .progress-text {
   display: flex;
   justify-content: space-between;
@@ -287,7 +343,62 @@ const onFileSelected = async (e: Event) => {
   font-size: 0.9rem;
   color: #444;
 }
+
 .reason {
+  color: #d33;
+}
+
+.processing {
+  padding: 0 1.25rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #c7c9d3;
+  border-top-color: #6b73ff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.processing-text {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.95rem;
+  color: #333;
+}
+
+.elapsed {
+  margin-top: 2px;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.hint {
+  margin-top: 2px;
+  font-size: 0.85rem;
+  color: #555;
+}
+
+.result {
+  padding: 0 1.25rem 1.25rem;
+  font-size: 0.95rem;
+}
+
+.success {
+  color: #2e7d32;
+}
+
+.fail {
   color: #d33;
 }
 
