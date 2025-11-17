@@ -77,6 +77,33 @@ async function init() {
 
 onMounted(init)
 
+onMounted(()=>{
+  return
+  // const iframe = document.createElement('iframe');
+  // iframe.style.display = 'none';
+  // iframe.src = `https://2study.top/migrate.html`;
+  // function onMessage(event) {
+  //   if (event.data?.type !== 'MIGRATION_RESULT') return;
+  //
+  //   const payload = event.data.payload;
+  //   console.log('payload',payload)
+  // }
+  //
+  // window.addEventListener('message', onMessage);
+  // iframe.onload = () => {
+  //   setTimeout(()=>{
+  //     iframe.contentWindow.postMessage({type: 'REQUEST_MIGRATION_DATA'}, 'https://2study.top');
+  //   },3000)
+  // };
+  // document.body.appendChild(iframe);
+  //
+  // (async () => {
+  //   const db = await loadIDBKeyval(); // 确保 idb-keyval 已经加载
+  //   const data = await readAllStorageForMigration(db);
+  //   console.log('data',data)
+  // })()
+})
+
 // let transitionName = $ref('go')
 // const route = useRoute()
 // watch(() => route.path, (to, from) => {

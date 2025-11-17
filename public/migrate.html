@@ -27,6 +27,8 @@
     });
   }
 
+  loadIDBKeyval(); // 确保 idb-keyval 已经加载
+
   // 2️⃣ 读取 IndexedDB
   async function readAllStorageForMigration(db) {
     // localStorage 数据
