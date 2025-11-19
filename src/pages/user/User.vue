@@ -246,13 +246,17 @@ function subscribe() {
 
 }
 
+function onFileChange(e) {
+  console.log('e', e)
+
+}
 </script>
 
 <template>
   <BasePage>
     <!-- Unauthenticated View -->
     <div v-if="!userStore.isLogin" class="center h-screen">
-      <div class="card bg-white shadow-lg text-center flex-col gap-6 w-110">
+      <div class="card-white text-center flex-col gap-6 w-110">
         <div class="w-20 h-20 bg-blue-100 rounded-full center mx-auto">
           <IconFluentPerson20Regular class="text-3xl text-blue-600"/>
         </div>
@@ -279,8 +283,7 @@ function subscribe() {
     <!-- Authenticated View -->
     <div v-else class="w-full flex gap-4">
       <!-- Main Account Settings -->
-      <!--      todo 夜间背景色-->
-      <div class="card bg-reverse-white shadow-lg flex-1 flex flex-col gap-2 px-6">
+      <div class="card-white flex-1 flex flex-col gap-2 px-6">
         <h1 class="text-2xl font-bold mt-0">帐户</h1>
 
         <!--        用户名-->
@@ -458,14 +461,14 @@ function subscribe() {
 
 
         <!-- Password Section -->
-        <div class="item cp" @click="showChangePwdForm">
+        <div class="item">
           <div class="flex-1">
             <div class="mb-2">设置密码</div>
             <div class="text-xs">在此输入密码</div>
           </div>
-          <IconFluentChevronLeft28Filled
-            class="transition-transform"
-            :class="['rotate-270','rotate-180'][showChangePwd?0:1]"/>
+          <BaseIcon @click="showChangePwdForm">
+            <IconFluentTextEditStyle20Regular/>
+          </BaseIcon>
         </div>
         <div v-if="showChangePwd">
           <Form
@@ -523,6 +526,20 @@ function subscribe() {
         </div>
         <!--        <div class="line"></div>-->
 
+        <!--        同步进度-->
+        <div class="item cp relative">
+          <div class="flex-1">
+            <div class="">同步进度</div>
+            <!--            <div class="text-xs mt-2">在此输入密码</div>-->
+          </div>
+          <IconFluentChevronLeft28Filled class="rotate-180"/>
+          <input type="file" accept=".json,.zip,application/json,application/zip"
+                 @change="onFileChange"
+                 class="absolute left-0 top-0 w-full h-full bg-red cp opacity-0"/>
+        </div>
+        <div class="line"></div>
+
+        <!--        去github issue-->
         <div class="item cp"
              @click="goIssues">
           <div class="flex-1">
@@ -551,8 +568,7 @@ function subscribe() {
       </div>
 
       <!-- Subscription Information -->
-      <!--      todo 夜间背景色-->
-      <div class="card bg-reverse-white shadow-lg w-80">
+      <div class="card-white w-80">
         <div class="flex items-center gap-3 mb-4">
           <IconFluentCrown20Regular class="text-2xl text-yellow-500"/>
           <div class="text-lg font-bold">订阅信息</div>
@@ -563,13 +579,13 @@ function subscribe() {
           <template v-if="userStore.user?.member">
             <div>
               <div class="mb-1">当前计划</div>
-              <div class="text-base font-bold">{{ member?.levelDesc }}</div>
+              <div class="text-base font-bold">{{ member?.planDesc }}</div>
             </div>
 
             <div>
               <div class="mb-1">状态</div>
               <div class="flex items-center gap-2">
-                <div class="w-2 h-2 rounded-full"  :class="member?.active ?'bg-green-500':'bg-red-500'"></div>
+                <div class="w-2 h-2 rounded-full" :class="member?.active ?'bg-green-500':'bg-red-500'"></div>
                 <span class="text-base font-medium" :class="member?.active ?'text-green-700':'text-red-700'">
                 {{ member?.status }}
               </span>
@@ -609,6 +625,7 @@ function subscribe() {
     </div>
   </BasePage>
 </template>
+
 <style scoped lang="scss">
 .item {
   @apply flex items-center justify-between min-h-14;

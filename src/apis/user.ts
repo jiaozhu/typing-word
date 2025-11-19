@@ -24,6 +24,7 @@ export interface User {
     endDate: number,
     autoRenew: boolean,
     plan: string,
+    planDesc: string,
   }
 }
 

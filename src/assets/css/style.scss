@@ -73,6 +73,8 @@
 
   --color-label-bg: whitesmoke;
   --color-link: #2563EB;
+
+  --color-card-bg: white;
 }
 
 .footer {
@@ -123,6 +125,8 @@ html.dark {
   --color-progress-bar: rgb(73, 77, 82) !important;
 
   --color-label-bg: rgb(10, 10, 10);
+
+  --color-card-bg: rgb(30, 31, 34);
 
   .footer {
     &.hide {
@@ -401,6 +405,11 @@ a {
 .card {
   @apply rounded-xl p-4 mb-8 shadow-lg box-border relative;
   background: var(--color-second);
+}
+
+.card-white {
+  @extend .card;
+  background: var(--color-card-bg);
 }
 
 .inline-center {

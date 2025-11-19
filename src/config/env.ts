@@ -24,6 +24,7 @@ export let AppEnv = {
 
 AppEnv.IS_LOGIN = !!AppEnv.TOKEN
 AppEnv.CAN_REQUEST = AppEnv.IS_LOGIN && AppEnv.IS_OFFICIAL
+// console.log('AppEnv.CAN_REQUEST',AppEnv.CAN_REQUEST)
 
 export const RESOURCE_PATH = ENV.API + 'static'
 

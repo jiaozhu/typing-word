@@ -5,7 +5,7 @@ import BaseInput from "@/components/base/BaseInput.vue";
 import BaseButton from "@/components/BaseButton.vue";
 import {APP_NAME} from "@/config/env.ts";
 import {useUserStore} from "@/stores/auth.ts";
-import {loginApi, LoginParams, registerApi, resetPasswordApi, sendCode} from "@/apis/user.ts";
+import {loginApi, LoginParams, registerApi, resetPasswordApi} from "@/apis/user.ts";
 import {accountRules, codeRules, passwordRules, phoneRules} from "@/utils/validation.ts";
 import Toast from "@/components/base/toast/Toast.ts";
 import FormItem from "@/components/base/form/FormItem.vue";
@@ -15,9 +15,9 @@ import {FormInstance} from "@/components/base/form/types.ts";
 import {PASSWORD_CONFIG, PHONE_CONFIG} from "@/config/auth.ts";
 import {CodeType} from "@/types/types.ts";
 import Code from "@/pages/user/Code.vue";
-import BackIcon from "@/components/BackIcon.vue";
-import {useNav} from "@/utils";
+import {isNewUser, useNav} from "@/utils";
 import Header from "@/components/Header.vue";
+import PopConfirm from "@/components/PopConfirm.vue";
 
 // 状态管理
 const userStore = useUserStore()
@@ -28,13 +28,14 @@ const router = useNav()
 let currentMode = $ref<'login' | 'register' | 'forgot'>('login')
 let loginType = $ref<'code' | 'password'>('code') // 默认验证码登录
 let loading = $ref(false)
-let codeCountdown = $ref(0)
 let showWechatQR = $ref(true)
 let wechatQRUrl = $ref('https://open.weixin.qq.com/connect/qrcode/041GmMJM2wfM0w3D')
 // 微信二维码状态：idle-正常/等待扫码，scanned-已扫码待确认，expired-已过期，cancelled-已取消
 let qrStatus = $ref<'idle' | 'scanned' | 'expired' | 'cancelled'>('idle')
 let qrExpireTimer: ReturnType<typeof setTimeout> | null = null
 let qrCheckInterval: ReturnType<typeof setInterval> | null = null
+let waitForImportConfirmation = $ref(true)
+let isImporting = $ref(true)
 const QR_EXPIRE_TIME = 5 * 60 * 1000 // 5分钟过期
 
 
@@ -153,7 +154,7 @@ async function handleRegister() {
       let res = await registerApi(registerForm)
       if (res.success) {
         userStore.setToken(res.data.token)
-        userStore.setUser(res.data.user)
+        userStore.setUser(res.data.user as any)
         Toast.success('注册成功')
         // 跳转到首页或用户中心
         router.push('/')
@@ -284,7 +285,7 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="center min-h-screen">
-    <div class="rounded-2xl p-2 bg-white shadow-lg">
+    <div class="card-white p-2" v-if="!waitForImportConfirmation">
       <!-- 登录区域容器 - 弹框形式 -->
       <div class="flex gap-2">
         <!-- 左侧登录区域 -->
@@ -578,6 +579,44 @@ onBeforeUnmount(() => {
             <IconIxWechatLogo class="text-xl color-green"/>
             <span class="text-sm text-gray-600">微信扫码登录</span>
           </p>
+        </div>
+      </div>
+    </div>
+
+    <div v-else class="card-white p-6 w-100">
+      <div class="title">同步数据确认</div>
+      <div class="flex flex-col justify-between h-60">
+        <div v-if="!isImporting">
+          <h2>检测到您本地存在使用记录</h2>
+          <h3>是否需要同步到账户中？</h3>
+        </div>
+        <div>
+          <h3 class="text-align-center">正在导入中</h3>
+          <ol class="pl-4">
+            <li>
+              您的用户数据已自动下载到您的电脑中
+            </li>
+            <li>
+              随后将开始数据同步
+            </li>
+            <li>
+              如果您的数据量很大，这将是一个耗时操作
+            </li>
+            <li class="color-red-5 font-bold">
+              请耐心等待，请勿关闭此页面
+            </li>
+          </ol>
+        </div>
+        <div class="flex gap-space justify-end">
+          <PopConfirm :title="[
+            {text:'您的用户数据将以压缩包自动下载到您的电脑中',type:'normal'},
+            {text:'随后用户数据将被移除',type:'redBold'},
+            {text:'是否确认继续？',type:'normal'},
+          ]">
+            <BaseButton type="info">放弃数据</BaseButton>
+          </PopConfirm>
+
+          <BaseButton>确认同步</BaseButton>
         </div>
       </div>
     </div>

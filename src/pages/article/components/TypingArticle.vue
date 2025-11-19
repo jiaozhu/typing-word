@@ -437,15 +437,15 @@ function onContextMenu(e: MouseEvent, sentence: Sentence, i, j, w) {
         onClick: () => {
           let word = props.article.sections[i][j].words[w]
           let text = word.word
-          // let doc = nlp(text)
-          // // 优先判断是不是动词
-          // if (doc.verbs().found) {
-          //   text = doc.verbs().toInfinitive().text()
-          // }
-          // // 如果是名词（复数 → 单数）
-          // if (doc.nouns().found) {
-          //   text = doc.nouns().toSingular().text()
-          // }
+          let doc = nlp(text)
+          // 优先判断是不是动词
+          if (doc.verbs().found) {
+            text = doc.verbs().toInfinitive().text()
+          }
+          // 如果是名词（复数 → 单数）
+          if (doc.nouns().found) {
+            text = doc.nouns().toSingular().text()
+          }
           if (!text.length) text = word.word
           console.log('text', text)
           toggleWordCollect(getDefaultWord({word: text, id: nanoid()}))

@@ -1,4 +1,4 @@
-import {BaseState, DefaultBaseState, useBaseStore} from "@/stores/base.ts";
+import {BaseState, getDefaultBaseState, useBaseStore} from "@/stores/base.ts";
 import {getDefaultSettingState, SettingState} from "@/stores/setting.ts";
 import {Dict, DictId, DictResource, DictType} from "@/types/types.ts";
 import {useRouter} from "vue-router";
@@ -28,7 +28,7 @@ export function checkAndUpgradeSaveDict(val: any) {
   // console.log(configStr)
   // console.log('s', new Blob([val]).size)
   // val = ''
-  let defaultState = DefaultBaseState()
+  let defaultState = getDefaultBaseState()
   if (val) {
     try {
       let data: any
@@ -449,4 +449,13 @@ export function resourceWrap(resource: string, version?: number) {
     return `${resource}_v${version}.json`
   }
   return resource;
+}
+
+// check if it is a new user
+export async function isNewUser() {
+  let isNew = false
+  let base = useBaseStore()
+  console.log(JSON.stringify(base.$state))
+  console.log(JSON.stringify(getDefaultBaseState()))
+  return JSON.stringify(base.$state) === JSON.stringify({...getDefaultBaseState(), ...{load: true}})
 }

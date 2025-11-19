@@ -22,7 +22,7 @@ export interface BaseState {
   dictListVersion: number
 }
 
-export const DefaultBaseState = (): BaseState => ({
+export const getDefaultBaseState = (): BaseState => ({
   simpleWords: [
     'a', 'an',
     'i', 'my', 'me', 'you', 'your', 'he', 'his', 'she', 'her', 'it',
@@ -51,7 +51,7 @@ export const DefaultBaseState = (): BaseState => ({
 
 export const useBaseStore = defineStore('base', {
   state: (): BaseState => {
-    return DefaultBaseState()
+    return getDefaultBaseState()
   },
   getters: {
     collectWord(): Dict {

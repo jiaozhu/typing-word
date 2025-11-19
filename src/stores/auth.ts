@@ -1,7 +1,7 @@
-import { defineStore } from 'pinia'
-import { ref } from 'vue'
-import { getUserInfo, User } from '@/apis/user.ts'
-import { AppEnv } from "@/config/env.ts";
+import {defineStore} from 'pinia'
+import {ref} from 'vue'
+import {getUserInfo, User} from '@/apis/user.ts'
+import {AppEnv} from "@/config/env.ts";
 import Toast from "@/components/base/toast/Toast.ts";
 
 export const useUserStore = defineStore('user', () => {
@@ -42,6 +42,7 @@ export const useUserStore = defineStore('user', () => {
 
   // 获取用户信息
   async function fetchUserInfo() {
+    if (!AppEnv.CAN_REQUEST) return false
     try {
       const res = await getUserInfo()
       if (res.success) {
@@ -58,11 +59,9 @@ export const useUserStore = defineStore('user', () => {
 
   // 初始化用户状态
   async function init() {
-    if (AppEnv.CAN_REQUEST) {
-      const success = await fetchUserInfo()
-      if (!success) {
-        clearToken()
-      }
+    const success = await fetchUserInfo()
+    if (!success) {
+      clearToken()
     }
   }
 

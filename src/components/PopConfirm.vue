@@ -11,9 +11,21 @@ export default {
   },
   props: {
     title: {
-      type: String,
+      type: [String, Array],
       default() {
         return ''
+      },
+      validator(value) {
+        // Validate that array items have the correct structure
+        if (Array.isArray(value)) {
+          return value.every(item => 
+            typeof item === 'object' && 
+            item !== null && 
+            typeof item.text === 'string' &&
+            ['normal', 'bold', 'red', 'redBold'].includes(item.type)
+          )
+        }
+        return typeof value === 'string'
       }
     },
     disabled: {
@@ -21,6 +33,17 @@ export default {
       default() {
         return false
       }
+    }
+  },
+  computed: {
+    titleItems() {
+      if (typeof this.title === 'string') {
+        return [{ text: this.title, type: 'normal' }]
+      }
+      if (Array.isArray(this.title)) {
+        return this.title
+      }
+      return []
     }
   },
   data() {
@@ -37,6 +60,27 @@ export default {
     })
   },
   methods: {
+    getTextStyle(type) {
+      const styles = {
+        normal: {
+          fontWeight: 'normal',
+          color: 'inherit'
+        },
+        bold: {
+          fontWeight: 'bold',
+          color: 'inherit'
+        },
+        red: {
+          fontWeight: 'normal',
+          color: 'red'
+        },
+        redBold: {
+          fontWeight: 'bold',
+          color: 'red'
+        }
+      }
+      return styles[type] || styles.normal
+    },
     showPop(e) {
       if (this.disabled) return this.$emit('confirm')
       e?.stopPropagation()
@@ -68,8 +112,16 @@ export default {
               {
                   this.show && (
                       <div ref="tip" class="pop-confirm-content shadow-2xl">
-                        <div class="w-50">
-                          {this.title}
+                        <div class="w-52 title-content">
+                          {this.titleItems.map((item, index) => (
+                            <div 
+                              key={index} 
+                              style={this.getTextStyle(item.type)}
+                              class="title-item"
+                            >
+                              {item.text}
+                            </div>
+                          ))}
                         </div>
                         <div class="options">
                           <BaseButton type="info" size="small" onClick={() => this.show = false}>取消</BaseButton>
@@ -95,6 +147,15 @@ export default {
   transform: translate(-50%, calc(-100% - .6rem));
   z-index: 999;
 
+  .title-content {
+    .title-item {
+      margin-bottom: 0.25rem;
+      
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+  }
 
   .options {
     margin-top: .9rem;
