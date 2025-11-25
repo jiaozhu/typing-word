@@ -93,7 +93,7 @@ async function transfer() {
   <Dialog v-model="model"
           :footer="true"
           @ok="transfer"
-          confirmButtonText="转移数据"
+          confirmButtonText="迁移数据"
           title="迁移数据">
     <div class="px-4 flex-col center w-100">
       <h2 class="text-align-center">
