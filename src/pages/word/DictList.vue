@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { _nextTick, groupBy, resourceWrap, useNav } from "@/utils";
+import {_nextTick, groupBy, isMobile, resourceWrap, useNav} from "@/utils";
 import BasePage from "@/components/BasePage.vue";
 import { DictResource } from "@/types/types.ts";
 import { useRuntimeStore } from "@/stores/runtime.ts";
@@ -105,7 +105,7 @@ watch(dict_list, (val) => {
     });
 
     const r = localStorage.getItem('tour-guide');
-    if (settingStore.first && !r) {
+    if (settingStore.first && !r && !isMobile()) {
       tour.start();
     }
   }, 500)

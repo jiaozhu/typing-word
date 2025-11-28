@@ -2,7 +2,7 @@
 import { useBaseStore } from "@/stores/base.ts";
 import { useRouter } from "vue-router";
 import BasePage from "@/components/BasePage.vue";
-import { _getDictDataByUrl, _nextTick, msToHourMinute, resourceWrap, total, useNav } from "@/utils";
+import {_getDictDataByUrl, _nextTick, isMobile, msToHourMinute, resourceWrap, total, useNav} from "@/utils";
 import { DictResource, DictType } from "@/types/types.ts";
 import { useRuntimeStore } from "@/stores/runtime.ts";
 import BaseIcon from "@/components/BaseIcon.vue";
@@ -97,7 +97,7 @@ watch(() => store?.sbook?.id, (n) => {
       });
 
       const r = localStorage.getItem('tour-guide');
-      if (settingStore.first && !r) {
+      if (settingStore.first && !r && !isMobile()) {
         tour.start();
       }
     }, 500)

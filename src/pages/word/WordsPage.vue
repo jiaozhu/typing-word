@@ -2,7 +2,7 @@
 import { useBaseStore } from "@/stores/base.ts";
 import { useRouter } from "vue-router";
 import BaseIcon from "@/components/BaseIcon.vue";
-import { _getAccomplishDate, _getDictDataByUrl, _nextTick, resourceWrap, shuffle, useNav } from "@/utils";
+import {_getAccomplishDate, _getDictDataByUrl, _nextTick, isMobile, resourceWrap, shuffle, useNav} from "@/utils";
 import BasePage from "@/components/BasePage.vue";
 import { DictResource, WordPracticeMode } from "@/types/types.ts";
 import { onMounted, watch } from "vue";
@@ -224,7 +224,7 @@ onMounted(() => {
       ]
     });
     const r = localStorage.getItem('tour-guide');
-    if (settingStore.first && !r) tour.start();
+    if (settingStore.first && !r && !isMobile()) tour.start();
   }, 500)
 })
 </script>

@@ -18,7 +18,7 @@ import {
 import { useDisableEventListener, useOnKeyboardEventListener, useStartKeyboardEventListener } from "@/hooks/event.ts";
 import useTheme from "@/hooks/theme.ts";
 import Toast from '@/components/base/toast/Toast.ts'
-import { _getDictDataByUrl, _nextTick, cloneDeep, msToMinute, resourceWrap, total } from "@/utils";
+import {_getDictDataByUrl, _nextTick, cloneDeep, isMobile, msToMinute, resourceWrap, total} from "@/utils";
 import { usePracticeStore } from "@/stores/practice.ts";
 import { useArticleOptions } from "@/hooks/dict.ts";
 import { genArticleSectionData, usePlaySentenceAudio } from "@/hooks/article.ts";
@@ -186,7 +186,7 @@ watch(() => articleData?.article?.id, id => {
         ]
       });
       const r = localStorage.getItem('tour-guide');
-      if (settingStore.first && !r) {
+      if (settingStore.first && !r && !isMobile()) {
         tour.start();
       }
     }, 500)

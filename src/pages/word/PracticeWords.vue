@@ -9,7 +9,7 @@ import { Dict, PracticeData, WordPracticeType, ShortcutKey, TaskWords, Word, Wor
 import { useDisableEventListener, useOnKeyboardEventListener, useStartKeyboardEventListener } from "@/hooks/event.ts";
 import useTheme from "@/hooks/theme.ts";
 import { getCurrentStudyWord, useWordOptions } from "@/hooks/dict.ts";
-import { _getDictDataByUrl, _nextTick, cloneDeep, resourceWrap, shuffle } from "@/utils";
+import {_getDictDataByUrl, _nextTick, cloneDeep, isMobile, resourceWrap, shuffle} from "@/utils";
 import { useRoute, useRouter } from "vue-router";
 import Footer from "@/pages/word/components/Footer.vue";
 import Panel from "@/components/Panel.vue";
@@ -150,7 +150,7 @@ watchOnce(() => data.words.length, (newVal, oldVal) => {
       });
 
       const r = localStorage.getItem('tour-guide');
-      if (settingStore.first && !r) {
+      if (settingStore.first && !r && !isMobile()) {
         tour.start();
       }
     }, 500)

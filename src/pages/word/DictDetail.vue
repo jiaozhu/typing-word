@@ -434,7 +434,7 @@ watch(() => loading, (val) => {
     });
 
     const r = localStorage.getItem('tour-guide');
-    if (settingStore.first && !r) {
+    if (settingStore.first && !r && !isMobile()) {
       tour.start();
     }
   }, 500)
