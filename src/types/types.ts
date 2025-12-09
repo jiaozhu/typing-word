@@ -180,6 +180,7 @@ export interface Dict extends DictResource {
   is_default?: boolean
   update?: boolean
   cover?: string
+  sync?: boolean
 }
 
 export interface ArticleItem {

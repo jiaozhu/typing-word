@@ -307,6 +307,7 @@ let isNewHost = $ref(window.location.host === Host)
       </div>
       <div class="flex gap-4 flex-wrap mt-4">
         <Book :is-add="false"
+              :is-user="true"
               quantifier="篇"
               :item="item"
               :checked="selectIds.includes(item.id)"

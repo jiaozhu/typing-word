@@ -34,15 +34,15 @@ export const getDefaultBaseState = (): BaseState => ({
   load: false,
   word: {
     bookList: [
-      getDefaultDict({id: DictId.wordCollect, name: '收藏'}),
-      getDefaultDict({id: DictId.wordWrong, name: '错词'}),
-      getDefaultDict({id: DictId.wordKnown, name: '已掌握', description: '已掌握后的单词不会出现在练习中'}),
+      getDefaultDict({ id: DictId.wordCollect, name: '收藏' }),
+      getDefaultDict({ id: DictId.wordWrong, name: '错词' }),
+      getDefaultDict({ id: DictId.wordKnown, name: '已掌握', description: '已掌握后的单词不会出现在练习中' }),
     ],
     studyIndex: -1,
   },
   article: {
     bookList: [
-      getDefaultDict({id: DictId.articleCollect, name: '收藏'})
+      getDefaultDict({ id: DictId.articleCollect, en_name: DictId.articleCollect, name: '收藏' })
     ],
     studyIndex: -1,
   },
@@ -121,7 +121,7 @@ export const useBaseStore = defineStore('base', {
               data.dictListVersion = r.data
             }
           }
-          console.log('data',data)
+          console.log('data', data)
           if (AppEnv.CAN_REQUEST) {
             let res = await myDictList()
             if (res.success) {
@@ -129,7 +129,7 @@ export const useBaseStore = defineStore('base', {
             }
           }
           this.setState(data)
-          set(SAVE_DICT_KEY.key, JSON.stringify({val: shakeCommonDict(this.$state), version: SAVE_DICT_KEY.version}))
+          set(SAVE_DICT_KEY.key, JSON.stringify({ val: shakeCommonDict(this.$state), version: SAVE_DICT_KEY.version }))
         } catch (e) {
           console.error('读取本地dict数据失败', e)
         }
