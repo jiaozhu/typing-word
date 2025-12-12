@@ -234,18 +234,10 @@ const {
   isFetching
 } = useFetch(resourceWrap(DICT_LIST.WORD.RECOMMENDED)).json()
 
-let isNewHost = $ref(window.location.host === Host)
-
 </script>
 
 <template>
   <BasePage>
-    <div class="mb-4" v-if="!isNewHost">
-      新域名已启用，后续请访问 <a href="https://typewords.cc/words?from_old_site=1">https://typewords.cc</a>。当前
-      2study.top 域名将在不久后停止使用
-    </div>
-
-
     <div class="card flex flex-col md:flex-row gap-8">
       <div class="flex-1 w-full flex flex-col justify-between">
         <div class="flex gap-3">
